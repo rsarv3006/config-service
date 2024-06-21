@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"RjsConfigService/model"
+	"RjsConfigService/ent/schema"
 	"errors"
 	"time"
 
@@ -10,7 +10,7 @@ import (
 )
 
 type JWTClaims struct {
-	User model.User
+	User schema.User
 	jwt.StandardClaims
 }
 
@@ -21,7 +21,7 @@ var (
 	ErrInvalid = errors.New("couldn't parse claims")
 )
 
-func GenerateJWT(user model.User, ctx *fiber.Ctx) (*string, error) {
+func GenerateJWT(user schema.User, ctx *fiber.Ctx) (*string, error) {
 	jwtSecretString := ctx.Locals("JwtSecret").(string)
 	jwtKey := []byte(jwtSecretString)
 
@@ -37,7 +37,7 @@ func GenerateJWT(user model.User, ctx *fiber.Ctx) (*string, error) {
 	return &tokenString, err
 }
 
-func ValidateToken(signedToken string, ctx *fiber.Ctx) (*model.User, error) {
+func ValidateToken(signedToken string, ctx *fiber.Ctx) (*schema.User, error) {
 	jwtSecretString := ctx.Locals("JwtSecret").(string)
 	jwtKey := []byte(jwtSecretString)
 
