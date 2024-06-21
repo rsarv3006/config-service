@@ -6,5 +6,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AppConfig is the predicate function for appconfig builders.
+type AppConfig func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

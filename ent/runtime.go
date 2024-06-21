@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"RjsConfigService/ent/appconfig"
 	"RjsConfigService/ent/schema"
 	"RjsConfigService/ent/user"
 	"time"
@@ -14,6 +15,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	appconfigFields := schema.AppConfig{}.Fields()
+	_ = appconfigFields
+	// appconfigDescCreatedAt is the schema descriptor for created_at field.
+	appconfigDescCreatedAt := appconfigFields[1].Descriptor()
+	// appconfig.DefaultCreatedAt holds the default value on creation for the created_at field.
+	appconfig.DefaultCreatedAt = appconfigDescCreatedAt.Default.(func() time.Time)
+	// appconfigDescID is the schema descriptor for id field.
+	appconfigDescID := appconfigFields[0].Descriptor()
+	// appconfig.DefaultID holds the default value on creation for the id field.
+	appconfig.DefaultID = appconfigDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUUID is the schema descriptor for uuid field.

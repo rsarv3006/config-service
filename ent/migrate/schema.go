@@ -8,6 +8,21 @@ import (
 )
 
 var (
+	// AppConfigsColumns holds the columns for the "app_configs" table.
+	AppConfigsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "app_name", Type: field.TypeString},
+		{Name: "version", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}, Default: "inactive"},
+		{Name: "config", Type: field.TypeJSON},
+	}
+	// AppConfigsTable holds the schema information for the "app_configs" table.
+	AppConfigsTable = &schema.Table{
+		Name:       "app_configs",
+		Columns:    AppConfigsColumns,
+		PrimaryKey: []*schema.Column{AppConfigsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -25,6 +40,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppConfigsTable,
 		UsersTable,
 	}
 )
