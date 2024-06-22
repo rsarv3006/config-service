@@ -1,5 +1,5 @@
 ### POST /api/v1/config/test
-POST http://localhost:3000/api/v1/config/test
+POST http://localhost:3000/api/v1/config/test1
 Content-Type: application/json
 
 {
@@ -8,9 +8,9 @@ Content-Type: application/json
 }
 
 ### GET /api/v1/config/test
-GET http://localhost:3000/api/v1/config/test
+GET http://localhost:3000/api/v1/config/test1
 Content-Type: application/json
 
 ### Post activate config
-POST http://localhost:3000/api/v1/config/test/activate/3
+POST http://localhost:3000/api/v1/config/test1/activate/2
 Content-Type: application/json
