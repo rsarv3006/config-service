@@ -78,15 +78,15 @@ func (acu *AppConfigUpdate) AddVersion(i int) *AppConfigUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (acu *AppConfigUpdate) SetStatus(a appconfig.Status) *AppConfigUpdate {
-	acu.mutation.SetStatus(a)
+func (acu *AppConfigUpdate) SetStatus(s string) *AppConfigUpdate {
+	acu.mutation.SetStatus(s)
 	return acu
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (acu *AppConfigUpdate) SetNillableStatus(a *appconfig.Status) *AppConfigUpdate {
-	if a != nil {
-		acu.SetStatus(*a)
+func (acu *AppConfigUpdate) SetNillableStatus(s *string) *AppConfigUpdate {
+	if s != nil {
+		acu.SetStatus(*s)
 	}
 	return acu
 }
@@ -129,20 +129,7 @@ func (acu *AppConfigUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (acu *AppConfigUpdate) check() error {
-	if v, ok := acu.mutation.Status(); ok {
-		if err := appconfig.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AppConfig.status": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (acu *AppConfigUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := acu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(appconfig.Table, appconfig.Columns, sqlgraph.NewFieldSpec(appconfig.FieldID, field.TypeUUID))
 	if ps := acu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -164,7 +151,7 @@ func (acu *AppConfigUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddField(appconfig.FieldVersion, field.TypeInt, value)
 	}
 	if value, ok := acu.mutation.Status(); ok {
-		_spec.SetField(appconfig.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(appconfig.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := acu.mutation.Config(); ok {
 		_spec.SetField(appconfig.FieldConfig, field.TypeJSON, value)
@@ -239,15 +226,15 @@ func (acuo *AppConfigUpdateOne) AddVersion(i int) *AppConfigUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (acuo *AppConfigUpdateOne) SetStatus(a appconfig.Status) *AppConfigUpdateOne {
-	acuo.mutation.SetStatus(a)
+func (acuo *AppConfigUpdateOne) SetStatus(s string) *AppConfigUpdateOne {
+	acuo.mutation.SetStatus(s)
 	return acuo
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (acuo *AppConfigUpdateOne) SetNillableStatus(a *appconfig.Status) *AppConfigUpdateOne {
-	if a != nil {
-		acuo.SetStatus(*a)
+func (acuo *AppConfigUpdateOne) SetNillableStatus(s *string) *AppConfigUpdateOne {
+	if s != nil {
+		acuo.SetStatus(*s)
 	}
 	return acuo
 }
@@ -303,20 +290,7 @@ func (acuo *AppConfigUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (acuo *AppConfigUpdateOne) check() error {
-	if v, ok := acuo.mutation.Status(); ok {
-		if err := appconfig.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AppConfig.status": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (acuo *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, err error) {
-	if err := acuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(appconfig.Table, appconfig.Columns, sqlgraph.NewFieldSpec(appconfig.FieldID, field.TypeUUID))
 	id, ok := acuo.mutation.ID()
 	if !ok {
@@ -355,7 +329,7 @@ func (acuo *AppConfigUpdateOne) sqlSave(ctx context.Context) (_node *AppConfig, 
 		_spec.AddField(appconfig.FieldVersion, field.TypeInt, value)
 	}
 	if value, ok := acuo.mutation.Status(); ok {
-		_spec.SetField(appconfig.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(appconfig.FieldStatus, field.TypeString, value)
 	}
 	if value, ok := acuo.mutation.Config(); ok {
 		_spec.SetField(appconfig.FieldConfig, field.TypeJSON, value)

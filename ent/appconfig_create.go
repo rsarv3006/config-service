@@ -48,15 +48,15 @@ func (acc *AppConfigCreate) SetVersion(i int) *AppConfigCreate {
 }
 
 // SetStatus sets the "status" field.
-func (acc *AppConfigCreate) SetStatus(a appconfig.Status) *AppConfigCreate {
-	acc.mutation.SetStatus(a)
+func (acc *AppConfigCreate) SetStatus(s string) *AppConfigCreate {
+	acc.mutation.SetStatus(s)
 	return acc
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (acc *AppConfigCreate) SetNillableStatus(a *appconfig.Status) *AppConfigCreate {
-	if a != nil {
-		acc.SetStatus(*a)
+func (acc *AppConfigCreate) SetNillableStatus(s *string) *AppConfigCreate {
+	if s != nil {
+		acc.SetStatus(*s)
 	}
 	return acc
 }
@@ -144,11 +144,6 @@ func (acc *AppConfigCreate) check() error {
 	if _, ok := acc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AppConfig.status"`)}
 	}
-	if v, ok := acc.mutation.Status(); ok {
-		if err := appconfig.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AppConfig.status": %w`, err)}
-		}
-	}
 	if _, ok := acc.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "AppConfig.config"`)}
 	}
@@ -200,7 +195,7 @@ func (acc *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 		_node.Version = value
 	}
 	if value, ok := acc.mutation.Status(); ok {
-		_spec.SetField(appconfig.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(appconfig.FieldStatus, field.TypeString, value)
 		_node.Status = value
 	}
 	if value, ok := acc.mutation.Config(); ok {

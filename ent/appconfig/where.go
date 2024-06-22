@@ -70,6 +70,11 @@ func Version(v int) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldVersion, v))
 }
 
+// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
+func Status(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEQ(FieldStatus, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldCreatedAt, v))
@@ -216,23 +221,68 @@ func VersionLTE(v int) predicate.AppConfig {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.AppConfig {
+func StatusEQ(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldEQ(FieldStatus, v))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.AppConfig {
+func StatusNEQ(v string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNEQ(FieldStatus, v))
 }
 
 // StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.AppConfig {
+func StatusIn(vs ...string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldIn(FieldStatus, vs...))
 }
 
 // StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.AppConfig {
+func StatusNotIn(vs ...string) predicate.AppConfig {
 	return predicate.AppConfig(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// StatusGT applies the GT predicate on the "status" field.
+func StatusGT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGT(FieldStatus, v))
+}
+
+// StatusGTE applies the GTE predicate on the "status" field.
+func StatusGTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldGTE(FieldStatus, v))
+}
+
+// StatusLT applies the LT predicate on the "status" field.
+func StatusLT(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLT(FieldStatus, v))
+}
+
+// StatusLTE applies the LTE predicate on the "status" field.
+func StatusLTE(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldLTE(FieldStatus, v))
+}
+
+// StatusContains applies the Contains predicate on the "status" field.
+func StatusContains(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContains(FieldStatus, v))
+}
+
+// StatusHasPrefix applies the HasPrefix predicate on the "status" field.
+func StatusHasPrefix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasPrefix(FieldStatus, v))
+}
+
+// StatusHasSuffix applies the HasSuffix predicate on the "status" field.
+func StatusHasSuffix(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldHasSuffix(FieldStatus, v))
+}
+
+// StatusEqualFold applies the EqualFold predicate on the "status" field.
+func StatusEqualFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldEqualFold(FieldStatus, v))
+}
+
+// StatusContainsFold applies the ContainsFold predicate on the "status" field.
+func StatusContainsFold(v string) predicate.AppConfig {
+	return predicate.AppConfig(sql.FieldContainsFold(FieldStatus, v))
 }
 
 // And groups predicates with the AND operator between them.

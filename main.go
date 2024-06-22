@@ -1,9 +1,10 @@
 package main
 
 import (
+	"RjsConfigService/config"
+	"RjsConfigService/database"
 	"RjsConfigService/router"
 	"log"
-	"os"
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
@@ -13,8 +14,8 @@ import (
 )
 
 func main() {
-	jwtSecret := os.Getenv("JWT_SECRET")
-	env := os.Getenv("ENV")
+	jwtSecret := config.Config("JWT_SECRET")
+	env := config.Config("ENV")
 
 	app := fiber.New(fiber.Config{
 		Prefork:     false,
@@ -22,17 +23,17 @@ func main() {
 		JSONEncoder: json.Marshal,
 	})
 
-	println("Initializing emailer...")
+	client := database.Connect()
 
 	if env != "production" {
-		println("Enabling pprof...")
+		log.Println("Enabling pprof...")
 		app.Use(pprof.New())
 	}
 
 	app.Use(helmet.New())
 	app.Use(recover.New())
 
-	println("Setting context")
+	log.Println("Setting context")
 	app.Use(func(c *fiber.Ctx) error {
 		c.Set("Access-Control-Allow-Origin", "*")
 		c.Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
@@ -40,17 +41,17 @@ func main() {
 
 		c.Locals("JwtSecret", jwtSecret)
 		c.Locals("Env", env)
-		c.Locals("APPLE_CODE", os.Getenv("APPLE_CODE"))
 
 		return c.Next()
 	})
 
-	println("Created new fiber app...")
+	log.Println("Created new fiber app...")
 
-	router.SetupRoutes(app)
+	router.SetupRoutes(app, client)
 
-	println("Routes setup.")
+	log.Println("Routes setup.")
 
+	log.Println("Listening on port 3000")
 	err := app.Listen(":3000")
 
 	if err != nil {
