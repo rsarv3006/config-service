@@ -26,7 +26,7 @@ type AppConfig struct {
 	// Version holds the value of the "version" field.
 	Version int `json:"version,omitempty"`
 	// Status holds the value of the "status" field.
-	Status appconfig.Status `json:"status,omitempty"`
+	Status string `json:"status,omitempty"`
 	// Config holds the value of the "config" field.
 	Config       map[string]interface{} `json:"config,omitempty"`
 	selectValues sql.SelectValues
@@ -90,7 +90,7 @@ func (ac *AppConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				ac.Status = appconfig.Status(value.String)
+				ac.Status = value.String
 			}
 		case appconfig.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -146,7 +146,7 @@ func (ac *AppConfig) String() string {
 	builder.WriteString(fmt.Sprintf("%v", ac.Version))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", ac.Status))
+	builder.WriteString(ac.Status)
 	builder.WriteString(", ")
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", ac.Config))

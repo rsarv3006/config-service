@@ -21,18 +21,22 @@ func init() {
 	appconfigDescCreatedAt := appconfigFields[1].Descriptor()
 	// appconfig.DefaultCreatedAt holds the default value on creation for the created_at field.
 	appconfig.DefaultCreatedAt = appconfigDescCreatedAt.Default.(func() time.Time)
+	// appconfigDescStatus is the schema descriptor for status field.
+	appconfigDescStatus := appconfigFields[4].Descriptor()
+	// appconfig.DefaultStatus holds the default value on creation for the status field.
+	appconfig.DefaultStatus = appconfigDescStatus.Default.(string)
 	// appconfigDescID is the schema descriptor for id field.
 	appconfigDescID := appconfigFields[0].Descriptor()
 	// appconfig.DefaultID holds the default value on creation for the id field.
 	appconfig.DefaultID = appconfigDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescUUID is the schema descriptor for uuid field.
-	userDescUUID := userFields[0].Descriptor()
-	// user.DefaultUUID holds the default value on creation for the uuid field.
-	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
 	// userDescCreatedAt is the schema descriptor for created_at field.
 	userDescCreatedAt := userFields[1].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescID is the schema descriptor for id field.
+	userDescID := userFields[0].Descriptor()
+	// user.DefaultID holds the default value on creation for the id field.
+	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 }

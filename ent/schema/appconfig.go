@@ -20,7 +20,7 @@ func (AppConfig) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now),
 		field.String("app_name"),
 		field.Int("version"),
-		field.Enum("status").Values("active", "inactive").Default("inactive"),
+		field.String("status").Default("inactive"),
 		field.JSON("config", map[string]interface{}{}),
 	}
 }

@@ -3,7 +3,6 @@
 package appconfig
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -52,35 +51,11 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// Status defines the type for the "status" enum field.
-type Status string
-
-// StatusInactive is the default value of the Status enum.
-const DefaultStatus = StatusInactive
-
-// Status values.
-const (
-	StatusActive   Status = "active"
-	StatusInactive Status = "inactive"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
-	switch s {
-	case StatusActive, StatusInactive:
-		return nil
-	default:
-		return fmt.Errorf("appconfig: invalid enum value for status field: %q", s)
-	}
-}
 
 // OrderOption defines the ordering options for the AppConfig queries.
 type OrderOption func(*sql.Selector)
