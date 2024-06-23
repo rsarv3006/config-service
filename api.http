@@ -1,5 +1,5 @@
 ### POST /api/v1/config/test
-POST http://localhost:3000/api/v1/config/test1
+POST http://localhost:3000/api/v1/config/deez-nuts
 Content-Type: application/json
 
 {
