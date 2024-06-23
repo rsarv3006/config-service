@@ -14,7 +14,7 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
-const SevenDays = 7 * 24 * time.Hour
+const FiftyYears = 50 * 365 * 24 * time.Hour
 
 var (
 	ErrExpired = errors.New("token expired")
@@ -25,7 +25,7 @@ func GenerateJWT(user schema.User, ctx *fiber.Ctx) (*string, error) {
 	jwtSecretString := ctx.Locals("JwtSecret").(string)
 	jwtKey := []byte(jwtSecretString)
 
-	expirationTime := time.Now().Add(SevenDays)
+	expirationTime := time.Now().Add(FiftyYears)
 	claims := &JWTClaims{
 		User: user,
 		StandardClaims: jwt.StandardClaims{
