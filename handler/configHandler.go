@@ -16,15 +16,16 @@ func FetchConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		appName := c.Params("AppName")
 
+		if appName == "" {
+			return sendBadRequestResponse(c, nil, "AppName is required")
+		}
+
 		config, err := getCurrentConfigForApp(appName, dbClient)
 
 		if err != nil {
 			log.Println(err)
 			return c.JSON(fiber.Map{
-				"message": "Error",
-				"data": map[string]string{
-					"appName": appName,
-				},
+				"message": "Error fetching config",
 			})
 		}
 
