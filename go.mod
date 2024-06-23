@@ -10,6 +10,8 @@ require (
 	github.com/google/uuid v1.6.0
 )
 
+require github.com/apialerts/apialerts-go v0.0.4 // indirect
+
 require (
 	ariga.io/atlas v0.19.1-0.20240203083654-5948b60a8e43 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
