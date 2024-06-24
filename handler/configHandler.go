@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/apialerts/apialerts-go"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -98,6 +99,12 @@ func CreateConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 			log.Println(err)
 			return sendBadRequestResponse(c, err, "Error creating config")
 		}
+
+		apiAlertsClient := c.Locals("ApiAlertsClient").(*apialerts.Client)
+		versionString := strconv.Itoa(configVersion)
+		go apiAlertsClient.Send("Config created for app: "+appName,
+			[]string{appName, versionString},
+			"v1/config/"+appName)
 
 		return c.JSON(fiber.Map{
 			"message": "Success",
