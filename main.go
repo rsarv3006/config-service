@@ -1,6 +1,7 @@
 package main
 
 import (
+	"RjsConfigService/alerts"
 	"RjsConfigService/config"
 	"RjsConfigService/database"
 	"RjsConfigService/router"
@@ -33,6 +34,8 @@ func main() {
 	app.Use(helmet.New())
 	app.Use(recover.New())
 
+	apiAlertsClient := alerts.Connect()
+
 	log.Println("Setting context")
 	app.Use(func(c *fiber.Ctx) error {
 		c.Set("Access-Control-Allow-Origin", "*")
@@ -41,6 +44,7 @@ func main() {
 
 		c.Locals("JwtSecret", jwtSecret)
 		c.Locals("Env", env)
+		c.Locals("ApiAlertsClient", apiAlertsClient)
 
 		return c.Next()
 	})

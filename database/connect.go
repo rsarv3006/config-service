@@ -21,7 +21,7 @@ func Connect() *ent.Client {
 
 	connString := "host=" + host + " port=" + port + " user=" + user + " dbname=" + database + " password=" + pass + " sslmode=" + sslMode
 
-	client, err := ent.Open("postgres", connString, ent.Debug())
+	client, err := ent.Open("postgres", connString)
 
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
