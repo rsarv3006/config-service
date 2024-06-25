@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"RjsConfigService/ent/schema"
+	"RjsConfigService/ent"
 	"errors"
 	"time"
 
@@ -10,7 +10,7 @@ import (
 )
 
 type JWTClaims struct {
-	User schema.User
+	User *ent.User
 	jwt.StandardClaims
 }
 
@@ -21,11 +21,20 @@ var (
 	ErrInvalid = errors.New("couldn't parse claims")
 )
 
-func GenerateJWT(user schema.User, ctx *fiber.Ctx) (*string, error) {
+func GenerateJWT(user *ent.User, ctx *fiber.Ctx) (string, error) {
 	jwtSecretString := ctx.Locals("JwtSecret").(string)
+	return generateToken(user, jwtSecretString)
+}
+
+func GenerateJWTFromSecret(user *ent.User, jwtSecretString string) (string, error) {
+	return generateToken(user, jwtSecretString)
+}
+
+func generateToken(user *ent.User, jwtSecretString string) (string, error) {
 	jwtKey := []byte(jwtSecretString)
 
 	expirationTime := time.Now().Add(FiftyYears)
+
 	claims := &JWTClaims{
 		User: user,
 		StandardClaims: jwt.StandardClaims{
@@ -34,10 +43,10 @@ func GenerateJWT(user schema.User, ctx *fiber.Ctx) (*string, error) {
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
-	return &tokenString, err
+	return tokenString, err
 }
 
-func ValidateToken(signedToken string, ctx *fiber.Ctx) (*schema.User, error) {
+func ValidateToken(signedToken string, ctx *fiber.Ctx) (*ent.User, error) {
 	jwtSecretString := ctx.Locals("JwtSecret").(string)
 	jwtKey := []byte(jwtSecretString)
 
@@ -59,5 +68,5 @@ func ValidateToken(signedToken string, ctx *fiber.Ctx) (*schema.User, error) {
 	if claims.ExpiresAt < time.Now().Local().Unix() {
 		return nil, ErrExpired
 	}
-	return &claims.User, nil
+	return claims.User, nil
 }
