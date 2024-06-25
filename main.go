@@ -25,6 +25,7 @@ func main() {
 	})
 
 	client := database.Connect()
+	database.CreateUserAccounts(client, jwtSecret)
 
 	if env != "production" {
 		log.Println("Enabling pprof...")
