@@ -36,15 +36,15 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 }
 
 // SetRole sets the "role" field.
-func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
-	uc.mutation.SetRole(u)
+func (uc *UserCreate) SetRole(s string) *UserCreate {
+	uc.mutation.SetRole(s)
 	return uc
 }
 
 // SetNillableRole sets the "role" field if the given value is not nil.
-func (uc *UserCreate) SetNillableRole(u *user.Role) *UserCreate {
-	if u != nil {
-		uc.SetRole(*u)
+func (uc *UserCreate) SetNillableRole(s *string) *UserCreate {
+	if s != nil {
+		uc.SetRole(*s)
 	}
 	return uc
 }
@@ -56,15 +56,15 @@ func (uc *UserCreate) SetAppName(s string) *UserCreate {
 }
 
 // SetStatus sets the "status" field.
-func (uc *UserCreate) SetStatus(u user.Status) *UserCreate {
-	uc.mutation.SetStatus(u)
+func (uc *UserCreate) SetStatus(s string) *UserCreate {
+	uc.mutation.SetStatus(s)
 	return uc
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (uc *UserCreate) SetNillableStatus(u *user.Status) *UserCreate {
-	if u != nil {
-		uc.SetStatus(*u)
+func (uc *UserCreate) SetNillableStatus(s *string) *UserCreate {
+	if s != nil {
+		uc.SetStatus(*s)
 	}
 	return uc
 }
@@ -144,21 +144,11 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
 	}
-	if v, ok := uc.mutation.Role(); ok {
-		if err := user.RoleValidator(v); err != nil {
-			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
-		}
-	}
 	if _, ok := uc.mutation.AppName(); !ok {
 		return &ValidationError{Name: "app_name", err: errors.New(`ent: missing required field "User.app_name"`)}
 	}
 	if _, ok := uc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "User.status"`)}
-	}
-	if v, ok := uc.mutation.Status(); ok {
-		if err := user.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "User.status": %w`, err)}
-		}
 	}
 	return nil
 }
@@ -200,7 +190,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.CreatedAt = value
 	}
 	if value, ok := uc.mutation.Role(); ok {
-		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+		_spec.SetField(user.FieldRole, field.TypeString, value)
 		_node.Role = value
 	}
 	if value, ok := uc.mutation.AppName(); ok {
@@ -208,7 +198,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.AppName = value
 	}
 	if value, ok := uc.mutation.Status(); ok {
-		_spec.SetField(user.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(user.FieldStatus, field.TypeString, value)
 		_node.Status = value
 	}
 	return _node, _spec

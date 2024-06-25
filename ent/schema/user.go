@@ -18,9 +18,9 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Unique(),
 		field.Time("created_at").Default(time.Now),
-		field.Enum("role").Values("admin", "access").Default("access"),
+		field.String("role").Default("access"),
 		field.String("app_name"),
-		field.Enum("status").Values("active", "inactive").Default("active"),
+		field.String("status").Default("active"),
 	}
 }
 
