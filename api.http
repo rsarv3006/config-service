@@ -1,7 +1,7 @@
 ### POST /api/v1/config/test
-POST http://localhost:3000/api/v1/config/test1
+POST http://localhost:3000/api/v1/config/wishlistwrangler
 Content-Type: application/json
-Authorization: Bearer {{adminToken}}
+Authorization: Bearer {{wishlistwranglerToken}}
 
 {
     "name": "test",
@@ -9,9 +9,11 @@ Authorization: Bearer {{adminToken}}
 }
 
 ### GET /api/v1/config/test
-GET http://localhost:3000/api/v1/config/test1
+GET http://localhost:3000/api/v1/config/test
 Content-Type: application/json
+Authorization: Bearer {{wishlistwranglerToken}}
 
 ### Post activate config
-POST http://localhost:3000/api/v1/config/test1/activate/2
+POST http://localhost:3000/api/v1/config/test1/activate/4
 Content-Type: application/json
+Authorization: Bearer {{wishlistwranglerToken}}

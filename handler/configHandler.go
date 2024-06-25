@@ -15,10 +15,20 @@ import (
 
 func FetchConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+
 		appName := c.Params("AppName")
 
 		if appName == "" {
 			return sendBadRequestResponse(c, nil, "AppName is required")
+		}
+
+		currentUser := c.Locals("currentUser").(*ent.User)
+
+		if currentUser.Role != "admin" && currentUser.AppName != appName {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"message": "Forbidden",
+				"error":   nil,
+			})
 		}
 
 		config, err := getCurrentConfigForApp(appName, dbClient)
@@ -62,6 +72,15 @@ func getCurrentConfigForApp(appName string, dbClient *ent.Client) (*ent.AppConfi
 
 func CreateConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		currentUser := c.Locals("currentUser").(*ent.User)
+
+		if currentUser.Role != "admin" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"message": "Forbidden",
+				"error":   nil,
+			})
+		}
+
 		appName := c.Params("AppName")
 
 		configCreateDto := new(model.CreateConfigDto)
@@ -115,6 +134,15 @@ func CreateConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 
 func ActivateConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		currentUser := c.Locals("currentUser").(*ent.User)
+
+		if currentUser.Role != "admin" {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"message": "Forbidden",
+				"error":   nil,
+			})
+		}
+
 		appName := c.Params("AppName")
 		version := c.Params("Version")
 
@@ -169,6 +197,11 @@ func ActivateConfigEndpoint(dbClient *ent.Client) fiber.Handler {
 			log.Println(err)
 			return sendBadRequestResponse(c, err, "Error activating config")
 		}
+
+		apiAlertsClient := c.Locals("ApiAlertsClient").(*apialerts.Client)
+		go apiAlertsClient.Send("Config activated for app: "+appName,
+			[]string{appName, version},
+			"v1/config/"+appName)
 
 		return c.JSON(fiber.Map{
 			"message": "Success",
