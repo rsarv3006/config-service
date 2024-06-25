@@ -21,11 +21,11 @@ type User struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Role holds the value of the "role" field.
-	Role user.Role `json:"role,omitempty"`
+	Role string `json:"role,omitempty"`
 	// AppName holds the value of the "app_name" field.
 	AppName string `json:"app_name,omitempty"`
 	// Status holds the value of the "status" field.
-	Status       user.Status `json:"status,omitempty"`
+	Status       string `json:"status,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -71,7 +71,7 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
-				u.Role = user.Role(value.String)
+				u.Role = value.String
 			}
 		case user.FieldAppName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -83,7 +83,7 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				u.Status = user.Status(value.String)
+				u.Status = value.String
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -125,13 +125,13 @@ func (u *User) String() string {
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("role=")
-	builder.WriteString(fmt.Sprintf("%v", u.Role))
+	builder.WriteString(u.Role)
 	builder.WriteString(", ")
 	builder.WriteString("app_name=")
 	builder.WriteString(u.AppName)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", u.Status))
+	builder.WriteString(u.Status)
 	builder.WriteByte(')')
 	return builder.String()
 }

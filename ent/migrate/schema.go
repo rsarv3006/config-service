@@ -27,9 +27,9 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "access"}, Default: "access"},
+		{Name: "role", Type: field.TypeString, Default: "access"},
 		{Name: "app_name", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}, Default: "active"},
+		{Name: "status", Type: field.TypeString, Default: "active"},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
