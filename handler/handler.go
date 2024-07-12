@@ -13,3 +13,11 @@ func sendBadRequestResponse(c *fiber.Ctx, err error, message string) error {
 		"error":   err,
 	})
 }
+
+func HealthEndpoint() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "ok",
+		})
+	}
+}

@@ -1,3 +1,5 @@
 .env
 .idea
 *.env*
+fly.toml
+script.js
