@@ -13,6 +13,7 @@ func SetupRoutes(app *fiber.App, dbClient *ent.Client) {
 	api := app.Group("/api", logger.New())
 
 	setUpConfigRoutes(api, dbClient)
+	api.Get("/health", handler.HealthEndpoint())
 }
 
 func setUpConfigRoutes(api fiber.Router, dbClient *ent.Client) {
