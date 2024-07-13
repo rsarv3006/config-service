@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  config-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      - GO_ENV=production
+    restart: unless-stopped
