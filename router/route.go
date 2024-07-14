@@ -13,6 +13,7 @@ func SetupRoutes(app *fiber.App, dbClient *ent.Client) {
 	api := app.Group("/api", logger.New())
 
 	setUpConfigRoutes(api, dbClient)
+	setUpUserRoutes(api, dbClient)
 	api.Get("/health", handler.HealthEndpoint())
 }
 
@@ -23,4 +24,11 @@ func setUpConfigRoutes(api fiber.Router, dbClient *ent.Client) {
 	config.Get("/:AppName", handler.FetchConfigEndpoint(dbClient))
 	config.Post("/:AppName", handler.CreateConfigEndpoint(dbClient))
 	config.Post("/:AppName/activate/:Version", handler.ActivateConfigEndpoint(dbClient))
+}
+
+func setUpUserRoutes(api fiber.Router, dbClient *ent.Client) {
+	user := api.Group("/v1/user")
+	user.Use(middleware.IsExpired())
+
+	user.Post("/:AppName", handler.CreateAppUserEndpoint(dbClient))
 }
