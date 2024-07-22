@@ -1,7 +1,7 @@
 package main
 
 import (
-	"RjsConfigService/alerts"
+	"RjsConfigService/alert"
 	"RjsConfigService/config"
 	"RjsConfigService/database"
 	"RjsConfigService/router"
@@ -35,7 +35,7 @@ func main() {
 	app.Use(helmet.New())
 	app.Use(recover.New())
 
-	apiAlertsClient := alerts.Connect()
+	apiAlertsClient := alert.Connect()
 
 	log.Println("Setting context")
 	app.Use(func(c *fiber.Ctx) error {
