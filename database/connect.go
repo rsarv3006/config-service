@@ -5,11 +5,18 @@ import (
 	"RjsConfigService/ent"
 	"context"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
 func Connect() *ent.Client {
+	startTime := time.Now()
+	defer func() {
+		duration := time.Since(startTime)
+		log.Printf("Connect function took %v to execute", duration)
+	}()
+
 	host := config.Config("DB_HOST")
 	port := config.Config("DB_PORT")
 	user := config.Config("DB_USER")
