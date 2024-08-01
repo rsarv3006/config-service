@@ -24,20 +24,26 @@ var fiberLambda *fiberadapter.FiberLambda
 func initApp() *fiber.App {
 	jwtSecret := config.Config("JWT_SECRET")
 	env := config.Config("ENV")
+
 	app := fiber.New(fiber.Config{
 		Prefork:     false,
 		JSONDecoder: json.Unmarshal,
 		JSONEncoder: json.Marshal,
 	})
+
 	client := database.Connect()
-	database.CreateUserAccounts(client, jwtSecret)
+	go database.CreateUserAccounts(client, jwtSecret)
+
 	if env != "production" {
 		log.Println("Enabling pprof...")
 		app.Use(pprof.New())
 	}
+
 	app.Use(helmet.New())
 	app.Use(recover.New())
+
 	apiAlertsClient := alert.Connect()
+
 	log.Println("Setting context")
 	app.Use(func(c *fiber.Ctx) error {
 		c.Set("Access-Control-Allow-Origin", "*")
@@ -48,9 +54,11 @@ func initApp() *fiber.App {
 		c.Locals("ApiAlertsClient", apiAlertsClient)
 		return c.Next()
 	})
+
 	log.Println("Created new fiber app...")
 	router.SetupRoutes(app, client)
 	log.Println("Routes setup.")
+
 	return app
 }
 
