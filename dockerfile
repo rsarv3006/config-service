@@ -24,7 +24,7 @@ WORKDIR /root/
 
 # Copy the binary and .env file from the builder stage
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
+# COPY --from=builder /app/.env .
 
 # Expose port 3000
 EXPOSE 3000
