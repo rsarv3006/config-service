@@ -1,7 +1,7 @@
 package alert
 
 import (
-	"RjsConfigService/config"
+	"config-service/config"
 
 	"github.com/apialerts/apialerts-go"
 )

@@ -3,7 +3,7 @@
 package ent
 
 import (
-	"RjsConfigService/ent/appconfig"
+	"config-service/ent/appconfig"
 	"context"
 	"errors"
 	"fmt"
@@ -22,79 +22,79 @@ type AppConfigCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (acc *AppConfigCreate) SetCreatedAt(t time.Time) *AppConfigCreate {
-	acc.mutation.SetCreatedAt(t)
-	return acc
+func (_c *AppConfigCreate) SetCreatedAt(v time.Time) *AppConfigCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (acc *AppConfigCreate) SetNillableCreatedAt(t *time.Time) *AppConfigCreate {
-	if t != nil {
-		acc.SetCreatedAt(*t)
+func (_c *AppConfigCreate) SetNillableCreatedAt(v *time.Time) *AppConfigCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return acc
+	return _c
 }
 
 // SetAppName sets the "app_name" field.
-func (acc *AppConfigCreate) SetAppName(s string) *AppConfigCreate {
-	acc.mutation.SetAppName(s)
-	return acc
+func (_c *AppConfigCreate) SetAppName(v string) *AppConfigCreate {
+	_c.mutation.SetAppName(v)
+	return _c
 }
 
 // SetVersion sets the "version" field.
-func (acc *AppConfigCreate) SetVersion(i int) *AppConfigCreate {
-	acc.mutation.SetVersion(i)
-	return acc
+func (_c *AppConfigCreate) SetVersion(v int) *AppConfigCreate {
+	_c.mutation.SetVersion(v)
+	return _c
 }
 
 // SetStatus sets the "status" field.
-func (acc *AppConfigCreate) SetStatus(s string) *AppConfigCreate {
-	acc.mutation.SetStatus(s)
-	return acc
+func (_c *AppConfigCreate) SetStatus(v string) *AppConfigCreate {
+	_c.mutation.SetStatus(v)
+	return _c
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (acc *AppConfigCreate) SetNillableStatus(s *string) *AppConfigCreate {
-	if s != nil {
-		acc.SetStatus(*s)
+func (_c *AppConfigCreate) SetNillableStatus(v *string) *AppConfigCreate {
+	if v != nil {
+		_c.SetStatus(*v)
 	}
-	return acc
+	return _c
 }
 
 // SetConfig sets the "config" field.
-func (acc *AppConfigCreate) SetConfig(m map[string]interface{}) *AppConfigCreate {
-	acc.mutation.SetConfig(m)
-	return acc
+func (_c *AppConfigCreate) SetConfig(v map[string]interface{}) *AppConfigCreate {
+	_c.mutation.SetConfig(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (acc *AppConfigCreate) SetID(u uuid.UUID) *AppConfigCreate {
-	acc.mutation.SetID(u)
-	return acc
+func (_c *AppConfigCreate) SetID(v uuid.UUID) *AppConfigCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (acc *AppConfigCreate) SetNillableID(u *uuid.UUID) *AppConfigCreate {
-	if u != nil {
-		acc.SetID(*u)
+func (_c *AppConfigCreate) SetNillableID(v *uuid.UUID) *AppConfigCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return acc
+	return _c
 }
 
 // Mutation returns the AppConfigMutation object of the builder.
-func (acc *AppConfigCreate) Mutation() *AppConfigMutation {
-	return acc.mutation
+func (_c *AppConfigCreate) Mutation() *AppConfigMutation {
+	return _c.mutation
 }
 
 // Save creates the AppConfig in the database.
-func (acc *AppConfigCreate) Save(ctx context.Context) (*AppConfig, error) {
-	acc.defaults()
-	return withHooks(ctx, acc.sqlSave, acc.mutation, acc.hooks)
+func (_c *AppConfigCreate) Save(ctx context.Context) (*AppConfig, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (acc *AppConfigCreate) SaveX(ctx context.Context) *AppConfig {
-	v, err := acc.Save(ctx)
+func (_c *AppConfigCreate) SaveX(ctx context.Context) *AppConfig {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -102,60 +102,60 @@ func (acc *AppConfigCreate) SaveX(ctx context.Context) *AppConfig {
 }
 
 // Exec executes the query.
-func (acc *AppConfigCreate) Exec(ctx context.Context) error {
-	_, err := acc.Save(ctx)
+func (_c *AppConfigCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (acc *AppConfigCreate) ExecX(ctx context.Context) {
-	if err := acc.Exec(ctx); err != nil {
+func (_c *AppConfigCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (acc *AppConfigCreate) defaults() {
-	if _, ok := acc.mutation.CreatedAt(); !ok {
+func (_c *AppConfigCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := appconfig.DefaultCreatedAt()
-		acc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := acc.mutation.Status(); !ok {
+	if _, ok := _c.mutation.Status(); !ok {
 		v := appconfig.DefaultStatus
-		acc.mutation.SetStatus(v)
+		_c.mutation.SetStatus(v)
 	}
-	if _, ok := acc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := appconfig.DefaultID()
-		acc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (acc *AppConfigCreate) check() error {
-	if _, ok := acc.mutation.CreatedAt(); !ok {
+func (_c *AppConfigCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "AppConfig.created_at"`)}
 	}
-	if _, ok := acc.mutation.AppName(); !ok {
+	if _, ok := _c.mutation.AppName(); !ok {
 		return &ValidationError{Name: "app_name", err: errors.New(`ent: missing required field "AppConfig.app_name"`)}
 	}
-	if _, ok := acc.mutation.Version(); !ok {
+	if _, ok := _c.mutation.Version(); !ok {
 		return &ValidationError{Name: "version", err: errors.New(`ent: missing required field "AppConfig.version"`)}
 	}
-	if _, ok := acc.mutation.Status(); !ok {
+	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AppConfig.status"`)}
 	}
-	if _, ok := acc.mutation.Config(); !ok {
+	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "AppConfig.config"`)}
 	}
 	return nil
 }
 
-func (acc *AppConfigCreate) sqlSave(ctx context.Context) (*AppConfig, error) {
-	if err := acc.check(); err != nil {
+func (_c *AppConfigCreate) sqlSave(ctx context.Context) (*AppConfig, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := acc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, acc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -168,37 +168,37 @@ func (acc *AppConfigCreate) sqlSave(ctx context.Context) (*AppConfig, error) {
 			return nil, err
 		}
 	}
-	acc.mutation.id = &_node.ID
-	acc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (acc *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
+func (_c *AppConfigCreate) createSpec() (*AppConfig, *sqlgraph.CreateSpec) {
 	var (
-		_node = &AppConfig{config: acc.config}
+		_node = &AppConfig{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(appconfig.Table, sqlgraph.NewFieldSpec(appconfig.FieldID, field.TypeUUID))
 	)
-	if id, ok := acc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := acc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(appconfig.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := acc.mutation.AppName(); ok {
+	if value, ok := _c.mutation.AppName(); ok {
 		_spec.SetField(appconfig.FieldAppName, field.TypeString, value)
 		_node.AppName = value
 	}
-	if value, ok := acc.mutation.Version(); ok {
+	if value, ok := _c.mutation.Version(); ok {
 		_spec.SetField(appconfig.FieldVersion, field.TypeInt, value)
 		_node.Version = value
 	}
-	if value, ok := acc.mutation.Status(); ok {
+	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(appconfig.FieldStatus, field.TypeString, value)
 		_node.Status = value
 	}
-	if value, ok := acc.mutation.Config(); ok {
+	if value, ok := _c.mutation.Config(); ok {
 		_spec.SetField(appconfig.FieldConfig, field.TypeJSON, value)
 		_node.Config = value
 	}
@@ -213,16 +213,16 @@ type AppConfigCreateBulk struct {
 }
 
 // Save creates the AppConfig entities in the database.
-func (accb *AppConfigCreateBulk) Save(ctx context.Context) ([]*AppConfig, error) {
-	if accb.err != nil {
-		return nil, accb.err
+func (_c *AppConfigCreateBulk) Save(ctx context.Context) ([]*AppConfig, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(accb.builders))
-	nodes := make([]*AppConfig, len(accb.builders))
-	mutators := make([]Mutator, len(accb.builders))
-	for i := range accb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*AppConfig, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := accb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AppConfigMutation)
@@ -236,11 +236,11 @@ func (accb *AppConfigCreateBulk) Save(ctx context.Context) ([]*AppConfig, error)
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, accb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, accb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -260,7 +260,7 @@ func (accb *AppConfigCreateBulk) Save(ctx context.Context) ([]*AppConfig, error)
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, accb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -268,8 +268,8 @@ func (accb *AppConfigCreateBulk) Save(ctx context.Context) ([]*AppConfig, error)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (accb *AppConfigCreateBulk) SaveX(ctx context.Context) []*AppConfig {
-	v, err := accb.Save(ctx)
+func (_c *AppConfigCreateBulk) SaveX(ctx context.Context) []*AppConfig {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -277,14 +277,14 @@ func (accb *AppConfigCreateBulk) SaveX(ctx context.Context) []*AppConfig {
 }
 
 // Exec executes the query.
-func (accb *AppConfigCreateBulk) Exec(ctx context.Context) error {
-	_, err := accb.Save(ctx)
+func (_c *AppConfigCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (accb *AppConfigCreateBulk) ExecX(ctx context.Context) {
-	if err := accb.Exec(ctx); err != nil {
+func (_c *AppConfigCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

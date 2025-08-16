@@ -29,3 +29,4 @@ func (AppConfig) Fields() []ent.Field {
 func (AppConfig) Edges() []ent.Edge {
 	return nil
 }
+

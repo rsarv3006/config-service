@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"RjsConfigService/ent/appconfig"
-	"RjsConfigService/ent/predicate"
-	"RjsConfigService/ent/user"
+	"config-service/ent/appconfig"
+	"config-service/ent/predicate"
+	"config-service/ent/user"
 	"context"
 	"errors"
 	"fmt"

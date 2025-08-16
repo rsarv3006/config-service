@@ -9,10 +9,10 @@ import (
 	"log"
 	"reflect"
 
-	"RjsConfigService/ent/migrate"
+	"config-service/ent/migrate"
 
-	"RjsConfigService/ent/appconfig"
-	"RjsConfigService/ent/user"
+	"config-service/ent/appconfig"
+	"config-service/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -263,8 +263,8 @@ func (c *AppConfigClient) Update() *AppConfigUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AppConfigClient) UpdateOne(ac *AppConfig) *AppConfigUpdateOne {
-	mutation := newAppConfigMutation(c.config, OpUpdateOne, withAppConfig(ac))
+func (c *AppConfigClient) UpdateOne(_m *AppConfig) *AppConfigUpdateOne {
+	mutation := newAppConfigMutation(c.config, OpUpdateOne, withAppConfig(_m))
 	return &AppConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -281,8 +281,8 @@ func (c *AppConfigClient) Delete() *AppConfigDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AppConfigClient) DeleteOne(ac *AppConfig) *AppConfigDeleteOne {
-	return c.DeleteOneID(ac.ID)
+func (c *AppConfigClient) DeleteOne(_m *AppConfig) *AppConfigDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -396,8 +396,8 @@ func (c *UserClient) Update() *UserUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUser(u))
+func (c *UserClient) UpdateOne(_m *User) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUser(_m))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -414,8 +414,8 @@ func (c *UserClient) Delete() *UserDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
-	return c.DeleteOneID(u.ID)
+func (c *UserClient) DeleteOne(_m *User) *UserDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.

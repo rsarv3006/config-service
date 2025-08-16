@@ -28,3 +28,4 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return nil
 }
+

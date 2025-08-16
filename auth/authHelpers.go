@@ -1,11 +1,10 @@
 package auth
 
 import (
-	"RjsConfigService/ent"
+	"config-service/ent"
 	"errors"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -21,8 +20,7 @@ var (
 	ErrInvalid = errors.New("couldn't parse claims")
 )
 
-func GenerateJWT(user *ent.User, ctx *fiber.Ctx) (string, error) {
-	jwtSecretString := ctx.Locals("JwtSecret").(string)
+func GenerateJWT(user *ent.User, jwtSecretString string) (string, error) {
 	return generateToken(user, jwtSecretString)
 }
 
@@ -46,8 +44,7 @@ func generateToken(user *ent.User, jwtSecretString string) (string, error) {
 	return tokenString, err
 }
 
-func ValidateToken(signedToken string, ctx *fiber.Ctx) (*ent.User, error) {
-	jwtSecretString := ctx.Locals("JwtSecret").(string)
+func ValidateToken(signedToken string, jwtSecretString string) (*ent.User, error) {
 	jwtKey := []byte(jwtSecretString)
 
 	token, err := jwt.ParseWithClaims(

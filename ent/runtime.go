@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"RjsConfigService/ent/appconfig"
-	"RjsConfigService/ent/schema"
-	"RjsConfigService/ent/user"
+	"config-service/ent/appconfig"
+	"config-service/ent/schema"
+	"config-service/ent/user"
 	"time"
 
 	"github.com/google/uuid"

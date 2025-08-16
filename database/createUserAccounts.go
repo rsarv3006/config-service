@@ -1,9 +1,9 @@
 package database
 
 import (
-	"RjsConfigService/auth"
-	"RjsConfigService/ent"
-	"RjsConfigService/ent/user"
+	"config-service/auth"
+	"config-service/ent"
+	"config-service/ent/user"
 	"context"
 	"log"
 )
@@ -55,7 +55,7 @@ func createAdminAccount(dbClient *ent.Client, jwtSecret string) (string, error) 
 	return auth.GenerateJWTFromSecret(adminAccount, jwtSecret)
 }
 
-var appAccounts = []string{"basketbuddy", "wishlistwrangler", "bedtimebully"}
+var appAccounts = []string{"basketbuddy", "wishlistwrangler", "bedtimebully", "daysuntilwhen"}
 
 type CreatedAppAccount struct {
 	Name  string

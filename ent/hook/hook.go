@@ -3,7 +3,7 @@
 package hook
 
 import (
-	"RjsConfigService/ent"
+	"config-service/ent"
 	"context"
 	"fmt"
 )

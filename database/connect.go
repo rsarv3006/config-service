@@ -1,8 +1,8 @@
 package database
 
 import (
-	"RjsConfigService/config"
-	"RjsConfigService/ent"
+	"config-service/config"
+	"config-service/ent"
 	"context"
 	"log"
 	"time"

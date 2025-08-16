@@ -3,12 +3,13 @@
 package enttest
 
 import (
-	"RjsConfigService/ent"
 	"context"
-	// required by schema hooks.
-	_ "RjsConfigService/ent/runtime"
 
-	"RjsConfigService/ent/migrate"
+	"config-service/ent"
+	// required by schema hooks.
+	_ "config-service/ent/runtime"
+
+	"config-service/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

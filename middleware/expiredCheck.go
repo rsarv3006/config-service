@@ -1,39 +1,43 @@
 package middleware
 
 import (
-	"RjsConfigService/auth"
+	"config-service/auth"
+	"context"
+	"encoding/json"
+	"net/http"
 	"strings"
-
-	"github.com/gofiber/fiber/v2"
 )
 
-func IsExpired() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		if !strings.Contains(c.Get("Authorization"), "Bearer ") {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "Unauthorized",
-				"error":   "No token provided",
-			})
-		}
+func IsExpired(jwtSecret string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authHeader := r.Header.Get("Authorization")
+			if !strings.Contains(authHeader, "Bearer ") {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(map[string]any{
+					"message": "Unauthorized",
+					"error":   "No token provided",
+				})
+				return
+			}
 
-		token := strings.Split(c.Get("Authorization"), "Bearer ")[1]
-		currentUser, err := auth.ValidateToken(token, c)
+			token := strings.Split(authHeader, "Bearer ")[1]
 
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "Unauthorized",
-				"error":   err,
-			})
-		}
+			currentUser, err := auth.ValidateToken(token, jwtSecret)
+			if err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(map[string]any{
+					"message": "Unauthorized",
+					"error":   err.Error(),
+				})
+				return
+			}
 
-		c.Locals("currentUser", currentUser)
-
-		defer func() {
-			currentUser = nil
-		}()
-
-		return c.Next()
-
+			// Add user to request context
+			ctx := context.WithValue(r.Context(), "currentUser", currentUser)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
-
 }

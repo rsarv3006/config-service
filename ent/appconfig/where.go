@@ -3,7 +3,7 @@
 package appconfig
 
 import (
-	"RjsConfigService/ent/predicate"
+	"config-service/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
