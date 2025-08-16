@@ -30,7 +30,7 @@ func main() {
 	)
 
 	client := database.Connect()
-	go database.CreateUserAccounts(client, jwtSecret)
+	go database.CreateUserAccounts(client, jwtSecretV2)
 
 	apiAlertsClient := alert.Connect()
 
