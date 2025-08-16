@@ -55,7 +55,7 @@ func createAdminAccount(dbClient *ent.Client, jwtSecret string) (string, error) 
 	return auth.GenerateJWTFromSecret(adminAccount, jwtSecret)
 }
 
-var appAccounts = []string{"basketbuddy", "wishlistwrangler", "bedtimebully", "daysuntilwhen"}
+var appAccounts = []string{"basketbuddy", "wishlistwrangler", "bedtimebully", "daysuntilwhen", "chorddetector"}
 
 type CreatedAppAccount struct {
 	Name  string

@@ -13,7 +13,7 @@ import (
 
 func main() {
 	jwtSecret := config.Config("JWT_SECRET")
-	// env := config.Config("ENV")
+	jwtSecretV2 := config.Config("JWT_SECRET_V2")
 
 	s := fuego.NewServer(
 		fuego.WithAddr(":3000"),
@@ -34,11 +34,7 @@ func main() {
 
 	apiAlertsClient := alert.Connect()
 
-	fuego.Get(s, "/", func(c fuego.ContextNoBody) (string, error) {
-		return "Hello, World!", nil
-	})
-
-	router.SetupRoutes(s, client, *apiAlertsClient, jwtSecret)
+	router.SetupRoutes(s, client, *apiAlertsClient, jwtSecret, jwtSecretV2)
 
 	s.Run()
 }
