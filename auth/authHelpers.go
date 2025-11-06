@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"config-service/ent"
+	"config-service/model"
 	"errors"
 	"time"
 
@@ -9,7 +9,7 @@ import (
 )
 
 type JWTClaims struct {
-	User *ent.User
+	User *model.User `json:"user"`
 	jwt.StandardClaims
 }
 
@@ -20,19 +20,17 @@ var (
 	ErrInvalid = errors.New("couldn't parse claims")
 )
 
-func GenerateJWT(user *ent.User, jwtSecretString string) (string, error) {
+func GenerateJWT(user *model.User, jwtSecretString string) (string, error) {
 	return generateToken(user, jwtSecretString)
 }
 
-func GenerateJWTFromSecret(user *ent.User, jwtSecretString string) (string, error) {
+func GenerateJWTFromSecret(user *model.User, jwtSecretString string) (string, error) {
 	return generateToken(user, jwtSecretString)
 }
 
-func generateToken(user *ent.User, jwtSecretString string) (string, error) {
+func generateToken(user *model.User, jwtSecretString string) (string, error) {
 	jwtKey := []byte(jwtSecretString)
-
 	expirationTime := time.Now().Add(FiftyYears)
-
 	claims := &JWTClaims{
 		User: user,
 		StandardClaims: jwt.StandardClaims{
@@ -44,9 +42,8 @@ func generateToken(user *ent.User, jwtSecretString string) (string, error) {
 	return tokenString, err
 }
 
-func ValidateToken(signedToken string, jwtSecretString string) (*ent.User, error) {
+func ValidateToken(signedToken string, jwtSecretString string) (*model.User, error) {
 	jwtKey := []byte(jwtSecretString)
-
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&JWTClaims{},
@@ -54,7 +51,6 @@ func ValidateToken(signedToken string, jwtSecretString string) (*ent.User, error
 			return []byte(jwtKey), nil
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -67,3 +63,4 @@ func ValidateToken(signedToken string, jwtSecretString string) (*ent.User, error
 	}
 	return claims.User, nil
 }
+

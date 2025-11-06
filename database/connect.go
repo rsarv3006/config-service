@@ -1,43 +1,25 @@
 package database
 
 import (
-	"config-service/config"
-	"config-service/ent"
 	"context"
 	"log"
-	"time"
+	"os"
 
-	_ "github.com/lib/pq"
+	"cloud.google.com/go/firestore"
 )
 
-func Connect() *ent.Client {
-	startTime := time.Now()
-	defer func() {
-		duration := time.Since(startTime)
-		log.Printf("Connect function took %v to execute", duration)
-	}()
+func Connect() *firestore.Client {
+	ctx := context.Background()
+	projectID := os.Getenv("GOOGLE_PROJECT_ID")
 
-	host := config.Config("DB_HOST")
-	port := config.Config("DB_PORT")
-	user := config.Config("DB_USER")
-	database := config.Config("DB_NAME")
-	pass := config.Config("DB_PASS")
-	sslMode := config.Config("DB_SSL_MODE")
-
-	log.Println("Connecting to database...")
-
-	connString := "host=" + host + " port=" + port + " user=" + user + " dbname=" + database + " password=" + pass + " sslmode=" + sslMode
-
-	client, err := ent.Open("postgres", connString)
-
+	// If GOOGLE_APPLICATION_CREDENTIALS is set, it uses that
+	// Otherwise, it uses ADC (gcloud auth or metadata server)
+	client, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
-		log.Fatalf("failed opening connection to postgres: %v", err)
+		log.Fatalf("failed to create Firestore client: %v", err)
 	}
 
-	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
-
+	log.Println("Connected to Firestore.")
 	return client
 }
+

@@ -3,28 +3,32 @@ package handler
 import (
 	"config-service/auth"
 	"config-service/config"
-	"config-service/ent"
-	"config-service/ent/user"
+	"config-service/model"
 	"context"
 	"errors"
 	"log"
+	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/apialerts/apialerts-go"
 	"github.com/go-fuego/fuego"
+	"github.com/google/uuid"
+	"google.golang.org/api/iterator"
 )
 
+const usersCollection = "users"
+
 type UserResources struct {
-	DbClient        *ent.Client
+	Client          *firestore.Client
 	ApiAlertsClient apialerts.Client
 }
 
-type UserToCreate struct {
-}
+type UserToCreate struct{}
 
 type CreateUserReturn struct {
-	Message string    `json:"message"`
-	Data    *ent.User `json:"data"`
-	Token   string    `json:"token"`
+	Message string      `json:"message"`
+	Data    *model.User `json:"data"`
+	Token   string      `json:"token"`
 }
 
 type GetAllUsersReturn struct {
@@ -32,41 +36,57 @@ type GetAllUsersReturn struct {
 }
 
 func (h *UserResources) GetAllUsers(c fuego.ContextNoBody) (*GetAllUsersReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
 
 	if currentUser.Role != "admin" {
 		return nil, fuego.ForbiddenError{
-			Detail: "Fordbidden",
+			Detail: "Forbidden",
 		}
 	}
 
-	users, err := h.DbClient.User.Query().Select(user.FieldAppName).Strings(context.Background())
+	ctx := context.Background()
+	iter := h.Client.Collection(usersCollection).Documents(ctx)
+	defer iter.Stop()
 
-	if err != nil {
-		return nil, fuego.InternalServerError{
-			Detail: "Failed to get app names",
-			Err:    err,
+	var userNames []string
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fuego.InternalServerError{
+				Detail: "Failed to get app names",
+				Err:    err,
+			}
+		}
+
+		var user model.User
+		if err := doc.DataTo(&user); err != nil {
+			continue
+		}
+		if user.AppName != "" {
+			userNames = append(userNames, user.AppName)
 		}
 	}
 
 	return &GetAllUsersReturn{
-		UserNames: users,
+		UserNames: userNames,
 	}, nil
-
 }
 
 func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*CreateUserReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
 
 	if currentUser.Role != "admin" {
 		return nil, fuego.ForbiddenError{
-			Detail: "Fordbidden",
+			Detail: "Forbidden",
 		}
 	}
 
@@ -78,20 +98,39 @@ func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*Crea
 		}
 	}
 
-	existingUser, err := h.DbClient.User.Query().Where(user.AppName(appName)).Only(context.Background())
-	if err == nil && existingUser != nil {
+	ctx := context.Background()
+
+	// Check if user already exists
+	iter := h.Client.Collection(usersCollection).
+		Where("app_name", "==", appName).
+		Limit(1).
+		Documents(ctx)
+	defer iter.Stop()
+
+	_, err := iter.Next()
+	if err != iterator.Done {
+		// User exists or there was an error
+		if err != nil {
+			return nil, fuego.InternalServerError{
+				Detail: "Error checking for existing user",
+				Err:    err,
+			}
+		}
 		return nil, fuego.ConflictError{
 			Detail: "A user with the provided app name already exists.",
-			Err:    err,
 		}
 	}
 
-	user, err := h.DbClient.User.
-		Create().
-		SetAppName(appName).
-		SetRole("user").
-		Save(context.Background())
+	// Create new user
+	user := model.User{
+		ID:        uuid.New().String(),
+		CreatedAt: time.Now(),
+		Role:      "user",
+		AppName:   appName,
+		Status:    "active",
+	}
 
+	_, err = h.Client.Collection(usersCollection).Doc(user.ID).Set(ctx, user)
 	if err != nil {
 		log.Println(err)
 		return nil, fuego.InternalServerError{
@@ -102,8 +141,8 @@ func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*Crea
 
 	jwtSecret := config.Config("JWT_SECRET")
 	log.Println("jwtSecret: " + jwtSecret)
-	token, err := auth.GenerateJWTFromSecret(user, jwtSecret)
 
+	token, err := auth.GenerateJWTFromSecret(&user, jwtSecret)
 	if err != nil {
 		log.Println(err)
 		return nil, fuego.InternalServerError{
@@ -113,14 +152,15 @@ func (h *UserResources) CreateUser(c fuego.ContextWithBody[UserToCreate]) (*Crea
 
 	log.Println("token: " + token)
 	log.Println("apiAlertsClient: ")
+
 	go h.ApiAlertsClient.Send("User created for app: "+appName,
 		[]string{appName},
 		"v1/config/"+appName)
 
 	return &CreateUserReturn{
 		Message: "Success",
-		Data:    user,
+		Data:    &user,
 		Token:   token,
 	}, nil
-
 }
+

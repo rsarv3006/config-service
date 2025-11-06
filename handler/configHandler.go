@@ -1,21 +1,25 @@
 package handler
 
 import (
-	"config-service/ent"
-	"config-service/ent/appconfig"
+	"config-service/model"
 	"context"
 	"errors"
 	"log"
 	"strconv"
+	"time"
 
-	"entgo.io/ent/dialect/sql"
+	"cloud.google.com/go/firestore"
 	"github.com/apialerts/apialerts-go"
 	"github.com/go-fuego/fuego"
+	"github.com/google/uuid"
 	"github.com/patrickmn/go-cache"
+	"google.golang.org/api/iterator"
 )
 
+const appConfigsCollection = "ConfigService-app_configs"
+
 type ConfigResources struct {
-	DbClient        *ent.Client
+	Client          *firestore.Client
 	ApiAlertsClient apialerts.Client
 	Cache           *cache.Cache
 }
@@ -25,8 +29,8 @@ type ConfigToCreate struct{}
 type CreateConfigReturn struct{}
 
 type ConfigReturn struct {
-	Message string         `json:"message"`
-	Data    *ent.AppConfig `json:"data"`
+	Message string           `json:"message"`
+	Data    *model.AppConfig `json:"data"`
 }
 
 type GetConfigAppsReturn struct {
@@ -38,13 +42,11 @@ type CreateConfigDto struct {
 }
 
 type GetAllConfigsForAppReturn struct {
-	Configs []*ent.AppConfig `json:"configs"`
+	Configs []*model.AppConfig `json:"configs"`
 }
 
-// fuego.Post(config, "/{AppName}/activate/{Version}")
-
 func (h *ConfigResources) ActivateConfig(c fuego.ContextNoBody) (*ConfigReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
@@ -61,14 +63,13 @@ func (h *ConfigResources) ActivateConfig(c fuego.ContextNoBody) (*ConfigReturn, 
 	}
 
 	version := c.PathParam("Version")
-	if appName == "" {
+	if version == "" {
 		return nil, fuego.BadRequestError{
 			Detail: "Version parameter is required",
 		}
 	}
 
 	versionInt, err := strconv.Atoi(version)
-
 	if err != nil {
 		return nil, fuego.BadRequestError{
 			Detail: "Invalid version number submitted",
@@ -76,17 +77,31 @@ func (h *ConfigResources) ActivateConfig(c fuego.ContextNoBody) (*ConfigReturn, 
 		}
 	}
 
-	config, err := h.DbClient.
-		AppConfig.
-		Query().
-		Where(
-			appconfig.AppName(appName),
-			appconfig.Version(versionInt),
-		).First(context.Background())
+	ctx := context.Background()
 
+	// Find config to activate
+	iter := h.Client.Collection(appConfigsCollection).
+		Where("app_name", "==", appName).
+		Where("version", "==", versionInt).
+		Limit(1).
+		Documents(ctx)
+	defer iter.Stop()
+
+	doc, err := iter.Next()
+	if err == iterator.Done {
+		return nil, fuego.NotFoundError{}
+	}
 	if err != nil {
 		return nil, fuego.InternalServerError{
 			Detail: "Failed to fetch config to activate",
+			Err:    err,
+		}
+	}
+
+	var config model.AppConfig
+	if err := doc.DataTo(&config); err != nil {
+		return nil, fuego.InternalServerError{
+			Detail: "Failed to parse config",
 			Err:    err,
 		}
 	}
@@ -97,18 +112,21 @@ func (h *ConfigResources) ActivateConfig(c fuego.ContextNoBody) (*ConfigReturn, 
 		}
 	}
 
+	// Deactivate old config
 	oldConfig, err := h.getCurrentConfigForApp(appName)
-
 	if err != nil {
 		return nil, fuego.InternalServerError{
-			Detail: "Failed to fetch config to activate",
+			Detail: "Failed to fetch current config",
 			Err:    err,
 		}
 	}
 
 	if oldConfig != nil {
-		oldConfig.Status = "inactive"
-		if err := h.DbClient.AppConfig.UpdateOne(oldConfig).SetStatus("inactive").Exec(context.Background()); err != nil {
+		_, err = h.Client.Collection(appConfigsCollection).Doc(oldConfig.ID).
+			Update(ctx, []firestore.Update{
+				{Path: "status", Value: "inactive"},
+			})
+		if err != nil {
 			return nil, fuego.InternalServerError{
 				Detail: "Error deactivating old config",
 				Err:    err,
@@ -116,14 +134,19 @@ func (h *ConfigResources) ActivateConfig(c fuego.ContextNoBody) (*ConfigReturn, 
 		}
 	}
 
-	config.Status = "active"
-
-	if err := h.DbClient.AppConfig.UpdateOne(config).SetStatus("active").Exec(context.Background()); err != nil {
+	// Activate new config
+	_, err = h.Client.Collection(appConfigsCollection).Doc(config.ID).
+		Update(ctx, []firestore.Update{
+			{Path: "status", Value: "active"},
+		})
+	if err != nil {
 		return nil, fuego.InternalServerError{
 			Detail: "Error activating config",
 			Err:    err,
 		}
 	}
+
+	config.Status = "active"
 
 	go h.ApiAlertsClient.Send("Config activated for app: "+appName,
 		[]string{appName, version},
@@ -131,13 +154,12 @@ func (h *ConfigResources) ActivateConfig(c fuego.ContextNoBody) (*ConfigReturn, 
 
 	return &ConfigReturn{
 		Message: "Success",
-		Data:    config,
+		Data:    &config,
 	}, nil
-
 }
 
 func (h *ConfigResources) GetAllConfigsForApp(c fuego.ContextNoBody) (*GetAllConfigsForAppReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
@@ -153,16 +175,33 @@ func (h *ConfigResources) GetAllConfigsForApp(c fuego.ContextNoBody) (*GetAllCon
 		}
 	}
 
-	configs, err := h.DbClient.AppConfig.
-		Query().
-		Where(appconfig.AppName(appName)).
-		All(context.Background())
+	ctx := context.Background()
+	iter := h.Client.Collection(appConfigsCollection).
+		Where("app_name", "==", appName).
+		Documents(ctx)
+	defer iter.Stop()
 
-	if err != nil {
-		return nil, fuego.InternalServerError{
-			Detail: "Failed to fetch all configs",
-			Err:    err,
+	var configs []*model.AppConfig
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
 		}
+		if err != nil {
+			return nil, fuego.InternalServerError{
+				Detail: "Failed to fetch all configs",
+				Err:    err,
+			}
+		}
+
+		var config model.AppConfig
+		if err := doc.DataTo(&config); err != nil {
+			return nil, fuego.InternalServerError{
+				Detail: "Failed to parse config",
+				Err:    err,
+			}
+		}
+		configs = append(configs, &config)
 	}
 
 	return &GetAllConfigsForAppReturn{
@@ -171,7 +210,7 @@ func (h *ConfigResources) GetAllConfigsForApp(c fuego.ContextNoBody) (*GetAllCon
 }
 
 func (h *ConfigResources) CreateConfig(c fuego.ContextWithBody[CreateConfigDto]) (*ConfigReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
@@ -193,9 +232,9 @@ func (h *ConfigResources) CreateConfig(c fuego.ContextWithBody[CreateConfigDto])
 	}
 
 	configVersion := 1
+	status := "active"
 
 	previousConfig, err := h.getCurrentConfigForApp(appName)
-
 	if err != nil {
 		log.Println(err)
 		return nil, fuego.BadRequestError{
@@ -203,21 +242,22 @@ func (h *ConfigResources) CreateConfig(c fuego.ContextWithBody[CreateConfigDto])
 		}
 	}
 
-	status := "active"
-
 	if previousConfig != nil {
 		configVersion = previousConfig.Version + 1
 		status = "inactive"
 	}
 
-	config, err := h.DbClient.AppConfig.
-		Create().
-		SetAppName(appName).
-		SetVersion(configVersion).
-		SetStatus(status).
-		SetConfig(body.Config).
-		Save(context.Background())
+	config := model.AppConfig{
+		ID:        uuid.New().String(),
+		CreatedAt: time.Now(),
+		AppName:   appName,
+		Version:   configVersion,
+		Status:    status,
+		Config:    body.Config,
+	}
 
+	ctx := context.Background()
+	_, err = h.Client.Collection(appConfigsCollection).Doc(config.ID).Set(ctx, config)
 	if err != nil {
 		return nil, fuego.BadRequestError{
 			Detail: "Error Creating the App Config",
@@ -232,12 +272,12 @@ func (h *ConfigResources) CreateConfig(c fuego.ContextWithBody[CreateConfigDto])
 
 	return &ConfigReturn{
 		Message: "Success",
-		Data:    config,
+		Data:    &config,
 	}, nil
 }
 
 func (h *ConfigResources) GetConfigApps(c fuego.ContextNoBody) (*GetConfigAppsReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
@@ -245,18 +285,35 @@ func (h *ConfigResources) GetConfigApps(c fuego.ContextNoBody) (*GetConfigAppsRe
 	if currentUser.Role != "admin" {
 		return nil, fuego.ForbiddenError{}
 	}
-	appNames, err := h.DbClient.AppConfig.
-		Query().
-		Select(appconfig.FieldAppName).
-		GroupBy(appconfig.FieldAppName).
-		Strings(context.Background())
 
-	if err != nil {
-		log.Println(err)
-		return nil, fuego.InternalServerError{
-			Err:    err,
-			Detail: "Failed to fetch config",
+	ctx := context.Background()
+	iter := h.Client.Collection(appConfigsCollection).Documents(ctx)
+	defer iter.Stop()
+
+	appNamesMap := make(map[string]bool)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
 		}
+		if err != nil {
+			log.Println(err)
+			return nil, fuego.InternalServerError{
+				Err:    err,
+				Detail: "Failed to fetch configs",
+			}
+		}
+
+		var config model.AppConfig
+		if err := doc.DataTo(&config); err != nil {
+			continue
+		}
+		appNamesMap[config.AppName] = true
+	}
+
+	appNames := make([]string, 0, len(appNamesMap))
+	for name := range appNamesMap {
+		appNames = append(appNames, name)
 	}
 
 	return &GetConfigAppsReturn{
@@ -265,7 +322,7 @@ func (h *ConfigResources) GetConfigApps(c fuego.ContextNoBody) (*GetConfigAppsRe
 }
 
 func (h *ConfigResources) GetConfig(c fuego.ContextNoBody) (*ConfigReturn, error) {
-	currentUser, ok := c.Context().Value("currentUser").(*ent.User)
+	currentUser, ok := c.Context().Value("currentUser").(*model.User)
 	if !ok {
 		return nil, errors.New("current user not found in context")
 	}
@@ -284,12 +341,11 @@ func (h *ConfigResources) GetConfig(c fuego.ContextNoBody) (*ConfigReturn, error
 	if cached, found := h.Cache.Get(appName); found {
 		return &ConfigReturn{
 			Message: "Success",
-			Data:    cached.(*ent.AppConfig),
+			Data:    cached.(*model.AppConfig),
 		}, nil
 	}
 
 	config, err := h.getCurrentConfigForApp(appName)
-
 	if err != nil {
 		log.Println(err)
 		return nil, fuego.InternalServerError{
@@ -310,25 +366,35 @@ func (h *ConfigResources) GetConfig(c fuego.ContextNoBody) (*ConfigReturn, error
 	}, nil
 }
 
-func (h *ConfigResources) getCurrentConfigForApp(appName string) (*ent.AppConfig, error) {
-	config, err := h.DbClient.AppConfig.
-		Query().
-		Where(
-			appconfig.And(
-				appconfig.AppName(appName),
-				appconfig.Status("active"),
-			),
-		).
-		Order(appconfig.ByVersion(sql.OrderAsc())).
-		All(context.Background())
+func (h *ConfigResources) getCurrentConfigForApp(appName string) (*model.AppConfig, error) {
+	ctx := context.Background()
+	iter := h.Client.Collection(appConfigsCollection).
+		Where("app_name", "==", appName).
+		Where("status", "==", "active").
+		OrderBy("version", firestore.Asc).
+		Documents(ctx)
+	defer iter.Stop()
 
-	if err != nil {
-		return nil, err
+	var configs []*model.AppConfig
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		var config model.AppConfig
+		if err := doc.DataTo(&config); err != nil {
+			return nil, err
+		}
+		configs = append(configs, &config)
 	}
 
-	if len(config) == 0 {
+	if len(configs) == 0 {
 		return nil, nil
 	}
 
-	return config[len(config)-1], nil
+	return configs[len(configs)-1], nil
 }

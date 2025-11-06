@@ -1,27 +1,27 @@
 package router
 
 import (
-	"config-service/ent"
 	"config-service/handler"
 	"config-service/middleware"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/apialerts/apialerts-go"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
 	"github.com/patrickmn/go-cache"
 )
 
-func SetupRoutes(server *fuego.Server, dbClient *ent.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
+func SetupRoutes(server *fuego.Server, client *firestore.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
 	api := fuego.Group(server, "/api")
 
-	setUpConfigRoutes(api, dbClient, apiAlertsClient, jwtSecretKey, v2SecretKey)
-	setUpUserRoutes(api, dbClient, apiAlertsClient, jwtSecretKey, v2SecretKey)
+	setUpConfigRoutes(api, client, apiAlertsClient, jwtSecretKey, v2SecretKey)
+	setUpUserRoutes(api, client, apiAlertsClient, jwtSecretKey, v2SecretKey)
 }
 
-func setUpConfigRoutes(api *fuego.Server, dbClient *ent.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
+func setUpConfigRoutes(api *fuego.Server, client *firestore.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
 	configCache := cache.New(5*time.Minute, 10*time.Minute)
-	handlers := &handler.ConfigResources{DbClient: dbClient, ApiAlertsClient: apiAlertsClient, Cache: configCache}
+	handlers := &handler.ConfigResources{Client: client, ApiAlertsClient: apiAlertsClient, Cache: configCache}
 
 	config := fuego.Group(api, "/v1/config",
 		fuego.OptionSecurity(openapi3.SecurityRequirement{
@@ -49,8 +49,8 @@ func setUpConfigRoutes(api *fuego.Server, dbClient *ent.Client, apiAlertsClient 
 	fuego.Post(configV2, "/{AppName}/activate/{Version}", handlers.ActivateConfig)
 }
 
-func setUpUserRoutes(api *fuego.Server, dbClient *ent.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
-	handlers := &handler.UserResources{DbClient: dbClient, ApiAlertsClient: apiAlertsClient}
+func setUpUserRoutes(api *fuego.Server, client *firestore.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
+	handlers := &handler.UserResources{Client: client, ApiAlertsClient: apiAlertsClient}
 
 	user := fuego.Group(api, "/v1/user",
 		fuego.OptionSecurity(openapi3.SecurityRequirement{
