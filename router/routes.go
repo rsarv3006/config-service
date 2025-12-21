@@ -12,11 +12,21 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+type HealthResponse struct {
+	Message string `json:"message"`
+}
+
 func SetupRoutes(server *fuego.Server, client *firestore.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
 	api := fuego.Group(server, "/api")
 
 	setUpConfigRoutes(api, client, apiAlertsClient, jwtSecretKey, v2SecretKey)
 	setUpUserRoutes(api, client, apiAlertsClient, jwtSecretKey, v2SecretKey)
+
+	fuego.Get(api, "/health", func(c fuego.ContextNoBody) (HealthResponse, error) {
+		return HealthResponse{
+			Message: "ok",
+		}, nil
+	})
 }
 
 func setUpConfigRoutes(api *fuego.Server, client *firestore.Client, apiAlertsClient apialerts.Client, jwtSecretKey string, v2SecretKey string) {
